@@ -1,0 +1,4 @@
+com\example\demo\mapper\UserInfoMapperTest.class
+com\example\demo\service\impl\OpusServiceImplTest.class
+com\example\demo\DemoApplicationTests.class
+com\example\demo\service\impl\UserServiceImplTest.class

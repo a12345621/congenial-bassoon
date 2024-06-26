@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserInfoMapper">
+    <insert id="insertUserId">
+        insert into user_info(user_id,userinfo_username,userinfo_biography,userinfo_registration_time,userinfo_state)
+        values ((select user.id from user where username=#{sn}),'新世界用户','没有简介',now(),1)
+    </insert>
+    <update id="updateUserInfo">
+        update user_info
+                             <set>
+                 <if test='ui.userinfoUsername!=null||ui.userinfoUsername!=""' >
+                     userinfo_username=#{ui.userinfoUsername},
+                 </if>
+
+                 <if test='ui.userinfoAge!=null||ui.userinfoAge!=""'>
+                     userinfo_age=#{ui.userinfoAge},
+                 </if>
+
+                 <if test='ui.userinfoGender!=null||ui.userinfoGender!=""'>
+                     userinfo_gender=#{ui.userinfoGender},
+                 </if>
+
+                 <if test='ui.userinfoImage!=null||ui.userinfoImage!=""'>
+                     userinfo_image=#{ui.userinfoImage},
+                 </if>
+                 <if test='ui.userinfoBiography!=null||ui.userinfoBiography!=""'>
+                     userinfo_biography=#{ui.userinfoBiography}
+                 </if>
+                             </set>
+                where user_id=#{ui.userId}
+
+    </update>
+
+    <select id="SelectUserInfo" resultType="integer">
+        select user_info.userinfo_state
+        from user_info
+                 left join user on user_info.user_id = user.id
+        where username = #{u.username}
+    </select>
+    <resultMap id="UserVo" type="com.example.demo.Vo.UserVo" autoMapping="true">
+        <id column="uid" property="id"/>
+        <association property="userInfo" javaType="com.example.demo.pojo.UserInfo" autoMapping="true">
+            <id column="iid" property="id"/>
+        </association>
+    </resultMap>
+    <select id="getAllUserInfo" resultMap="UserVo">
+        select
+               user.username,
+               user.password,
+               user.id uid,
+               user_info.id iid,
+               user_info.user_id,
+               user_info.userinfo_username,
+               user_info.userinfo_biography,
+               user_info.userinfo_image,
+               user_info.userinfo_age,
+               user_info.userinfo_registration_time,
+               user_info.userinfo_state,
+               user_info.userinfo_gender
+        from user
+                 left join user_info on user_info.user_id = user.id
+    </select>
+
+    <update id="updateUserState">
+        update user_info set userinfo_state=#{st} where id=#{id}
+    </update>
+    <update id="updateUserImage">
+        update user_info set userinfo_image=#{url} where id=#{id}
+    </update>
+    <resultMap id="userInfoVo" type="com.example.demo.Vo.userInfoVo" autoMapping="true" >
+        <id property="userId" column="user_id"/>
+        <result property="userinfoUsername" column="userinfo_username"/>
+        <result property="userinfoImage" column="userinfo_image"/>
+        <collection property="opusVoList" ofType="com.example.demo.Vo.OpusVo" autoMapping="true">
+            <id property="id" column="id"/>
+            <result property="opusUserid" column="opus_userid"/>
+            <collection property="labelList" ofType="com.example.demo.pojo.Label" autoMapping="true">
+                <id property="labelContent" column="label_content"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="getAllOpusInfo" resultMap="userInfoVo">
+        select
+               ui.user_id,
+               ui.userinfo_username,
+               ui.userinfo_image,
+               op.id,
+               op.opus_userid,
+               op.opus_title,
+               op.opus_text,
+               op.opus_publish,
+               op.opus_count,
+               op.opus_up,
+               op.opus_collection,
+               la.label_content
+        from user_info ui
+                 left join opus op
+                           on ui.user_id = op.opus_userid
+                 left join opus_label ol
+                           on op.id = ol.opus_id
+                 left join label la
+                           on ol.label_id = la.id
+        where op.id is not null
+          and op.opus_state = 3
+
+    </select>
+</mapper>
